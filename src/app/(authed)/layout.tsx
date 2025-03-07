@@ -10,8 +10,8 @@ export default function AuthedLayout({
   return (
     <SidebarProvider>
       <AuthedSidebar />
-      <main className="w-full p-4 bg-gray-100">
-        <div className="flex items-center justify-between">
+      <main className="w-full p-4 bg-gray-100 flex flex-col items-center">
+        <div className="flex items-center justify-between w-full max-w-[1200px]">
           <SidebarTrigger />
           <AuthedDropdown />
         </div>
