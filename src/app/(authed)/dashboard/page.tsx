@@ -1,3 +1,9 @@
+import ExpensesCard from "./ExpensesCard";
+
 export default function Dashboard() {
-  return <div>Dashboard</div>;
+  return (
+    <div className="mt-4 max-w-[1200px]">
+      <ExpensesCard />
+    </div>
+  );
 }

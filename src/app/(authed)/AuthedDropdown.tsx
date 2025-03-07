@@ -17,7 +17,7 @@ export default function AuthedDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"ghost"} size={"icon"}>
+        <Button variant={"outline"} size={"icon"}>
           <User />
         </Button>
       </DropdownMenuTrigger>

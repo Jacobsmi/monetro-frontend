@@ -85,7 +85,8 @@ export default function SignUpForm() {
       <CardContent>
         {isSuccess ? (
           <div>
-            We just sent you an email. Click the link in it to complete sign up.
+            We just sent you an email. Click the link in it to complete your
+            sign up.
           </div>
         ) : (
           <Form {...form}>
