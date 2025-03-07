@@ -1,5 +1,11 @@
 "use client";
 
+/* 
+Dialog that allows the user to add or edit an expense. When editing an expense, an expense object is passed to the dialog as a prop.
+This prop is managed on the ExpenseTable component and the state is reset on dialog close. When no expense is passed, the dialog is 
+used to add a new expense.
+*/
+
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -13,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogTrigger } from "@radix-ui/react-dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import ExpenseDatePicker from "./ExpenseDatePicker";
@@ -23,7 +29,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Loader } from "lucide-react";
 import { revalidate } from "@/lib/actions/revalidate";
 
-const NewExpenseSchema = z.object({
+const ExpenseSchema = z.object({
   name: z.string().min(1, { message: "Expense name is required" }),
   amount: z
     .string()
@@ -37,60 +43,100 @@ const NewExpenseSchema = z.object({
   category: z.number().min(1, { message: "Expense category is required" }),
 });
 
-export default function AddExpenseDialog({
+export default function ManageExpenseDialog({
   initialCategories,
+  showTrigger = true,
+  edittingExpense,
+  setEdittingExpense,
 }: {
   initialCategories: Category[];
+  showTrigger?: boolean;
+  edittingExpense?: Expense | null;
+  setEdittingExpense?: (edittingExpense: Expense | null) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [isCreatingExpense, setIsCreatingExpense] = useState(false);
 
-  const form = useForm<z.infer<typeof NewExpenseSchema>>({
+  const form = useForm<z.infer<typeof ExpenseSchema>>({
     defaultValues: {
       name: "",
       amount: "",
       date: undefined,
       category: 0,
     },
-    resolver: zodResolver(NewExpenseSchema),
+    resolver: zodResolver(ExpenseSchema),
   });
 
-  const handleAddExpense = async (
-    formData: z.infer<typeof NewExpenseSchema>
-  ) => {
+  useEffect(() => {
+    if (edittingExpense) {
+      form.reset({
+        name: edittingExpense.name,
+        amount: String(edittingExpense.amount),
+        date: new Date(edittingExpense.date),
+        category: edittingExpense.category_id,
+      });
+    }
+  }, [edittingExpense, form]);
+
+  const handleAddExpense = async (formData: z.infer<typeof ExpenseSchema>) => {
     setIsCreatingExpense(true);
     const supabase = createClient();
-    console.log("Create new expense with data", formData);
-    const { error } = await supabase
-      .from("expenses")
-      .insert({
-        name: formData.name,
-        amount: formData.amount,
-        date: formData.date,
-        category_id: formData.category,
-      })
-      .select()
-      .overrideTypes<Expense, { merge: false }>();
-    if (!error) {
-      await revalidate("/dashboard", "path");
-      setOpen(false);
+    if (edittingExpense) {
+      const { error } = await supabase
+        .from("expenses")
+        .update({
+          name: formData.name,
+          amount: formData.amount,
+          date: formData.date,
+          category_id: formData.category,
+        })
+        .eq("id", edittingExpense.id)
+        .select()
+        .overrideTypes<Expense, { merge: false }>();
+      if (!error) {
+        await revalidate("/dashboard", "path");
+        setOpen(false);
+        if (setEdittingExpense) {
+          setEdittingExpense(null);
+        }
+      }
+    } else {
+      const { error } = await supabase
+        .from("expenses")
+        .insert({
+          name: formData.name,
+          amount: formData.amount,
+          date: formData.date,
+          category_id: formData.category,
+        })
+        .select()
+        .overrideTypes<Expense, { merge: false }>();
+      if (!error) {
+        await revalidate("/dashboard", "path");
+        setOpen(false);
+      }
     }
   };
 
   return (
     <Dialog
-      open={open}
+      open={open || !!edittingExpense}
       onOpenChange={(open) => {
+        if (setEdittingExpense && !open) {
+          setEdittingExpense(null);
+        }
         form.reset();
         setIsCreatingCategory(false);
         setIsCreatingExpense(false);
         setOpen(open);
       }}
     >
-      <DialogTrigger asChild>
-        <Button>Add Expense</Button>
-      </DialogTrigger>
+      {showTrigger && (
+        <DialogTrigger asChild>
+          <Button>Add Expense</Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogTitle>Add an Expense</DialogTitle>
         <Form {...form}>

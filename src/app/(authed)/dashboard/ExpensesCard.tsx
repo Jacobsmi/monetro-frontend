@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import AddExpenseDialog from "./AddExpenseDialog/AddExpenseDialog";
 import { createClient } from "@/lib/supabase/server";
 import { Category, Expense } from "@/types/global";
 import ExpenseTable from "./ExpenseTable/ExpenseTable";
+import ManageExpenseDialog from "./AddExpenseDialog/ManageExpenseDialog";
 
 export default async function ExpensesCard() {
   const supabase = await createClient();
@@ -20,7 +20,9 @@ export default async function ExpensesCard() {
     <Card>
       <CardHeader className="flex flex-row justify-between items-center">
         <CardTitle>Expenses</CardTitle>
-        <AddExpenseDialog initialCategories={categoriesResponse.data ?? []} />
+        <ManageExpenseDialog
+          initialCategories={categoriesResponse.data ?? []}
+        />
       </CardHeader>
       <CardContent>
         <ExpenseTable
