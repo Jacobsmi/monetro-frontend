@@ -14,9 +14,11 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Edit, Loader, Trash } from "lucide-react";
+import { ArrowDown, ArrowUp, Edit, Loader, Trash } from "lucide-react";
 import { useState } from "react";
 import ManageExpenseDialog from "../AddExpenseDialog/ManageExpenseDialog";
 import { createClient } from "@/lib/supabase/client";
@@ -31,6 +33,7 @@ export default function ExpenseTable({
 }) {
   const [edittingExpense, setEdittingExpense] = useState<Expense | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const handleDeleteExpense = async (id: number) => {
     setDeletingId(id);
     const supabase = createClient();
@@ -43,11 +46,39 @@ export default function ExpenseTable({
   const columns: ColumnDef<Expense>[] = [
     {
       accessorKey: "name",
-      header: "Name",
+      header: ({ column }) => {
+        return (
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Name
+            {column.getIsSorted() === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "desc" ? (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            ) : null}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "amount",
-      header: "Amount",
+      header: ({ column }) => {
+        return (
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Amount
+            {column.getIsSorted() === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "desc" ? (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            ) : null}
+          </div>
+        );
+      },
       cell: ({ getValue }) => {
         const value = getValue() as number;
         return `$${value.toFixed(2)}`;
@@ -55,7 +86,21 @@ export default function ExpenseTable({
     },
     {
       accessorKey: "date",
-      header: "Date",
+      header: ({ column }) => {
+        return (
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Date
+            {column.getIsSorted() === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "desc" ? (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            ) : null}
+          </div>
+        );
+      },
       cell: ({ getValue }) => {
         const value = getValue() as string;
         return new Date(value).toLocaleDateString("en-US", {
@@ -64,22 +109,54 @@ export default function ExpenseTable({
           year: "numeric",
         });
       },
+      sortingFn: (rowA, rowB, columnId) => {
+        const dateA = new Date(rowA.getValue(columnId) as string).getTime();
+        const dateB = new Date(rowB.getValue(columnId) as string).getTime();
+        return dateA > dateB ? 1 : dateA < dateB ? -1 : 0;
+      },
     },
     {
       accessorKey: "category_id",
-      header: "Category",
+      header: ({ column }) => {
+        return (
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Category
+            {column.getIsSorted() === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "desc" ? (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            ) : null}
+          </div>
+        );
+      },
+
       cell: ({ getValue }) => {
         const category = categories.find(
           (category) => category.id === getValue()
         );
         return category?.name || "Unknown";
       },
+      sortingFn: (rowA, rowB, columnId) => {
+        const catIdA = rowA.getValue(columnId) as number;
+        const catIdB = rowB.getValue(columnId) as number;
+
+        const catNameA =
+          categories.find((cat) => cat.id === catIdA)?.name || "";
+        const catNameB =
+          categories.find((cat) => cat.id === catIdB)?.name || "";
+
+        return catNameA.localeCompare(catNameB);
+      },
     },
     {
       header: "Actions",
+      enableSorting: false,
       cell: ({ row }) => {
         return (
-          <div className="flex justify-end">
+          <div className="flex justify-start">
             <Button
               variant={"ghost"}
               size={"icon"}
@@ -109,6 +186,11 @@ export default function ExpenseTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
   });
 
   return (
