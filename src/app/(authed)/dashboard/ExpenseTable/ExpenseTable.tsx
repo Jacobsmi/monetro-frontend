@@ -16,9 +16,11 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Edit } from "lucide-react";
+import { Edit, Loader, Trash } from "lucide-react";
 import { useState } from "react";
 import ManageExpenseDialog from "../AddExpenseDialog/ManageExpenseDialog";
+import { createClient } from "@/lib/supabase/client";
+import { revalidate } from "@/lib/actions/revalidate";
 
 export default function ExpenseTable({
   data,
@@ -28,6 +30,16 @@ export default function ExpenseTable({
   categories: Category[];
 }) {
   const [edittingExpense, setEdittingExpense] = useState<Expense | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const handleDeleteExpense = async (id: number) => {
+    setDeletingId(id);
+    const supabase = createClient();
+    const { error } = await supabase.from("expenses").delete().eq("id", id);
+    if (!error) {
+      await revalidate("/dashboard", "path");
+    }
+  };
+
   const columns: ColumnDef<Expense>[] = [
     {
       accessorKey: "name",
@@ -68,8 +80,24 @@ export default function ExpenseTable({
       cell: ({ row }) => {
         return (
           <div className="flex justify-end">
-            <Button onClick={() => setEdittingExpense(row.original)}>
+            <Button
+              variant={"ghost"}
+              size={"icon"}
+              onClick={() => setEdittingExpense(row.original)}
+            >
               <Edit />
+            </Button>
+            <Button
+              variant={"ghost"}
+              size={"icon"}
+              onClick={() => handleDeleteExpense(row.original.id)}
+              disabled={deletingId === row.original.id}
+            >
+              {deletingId === row.original.id ? (
+                <Loader className="animate-spin" />
+              ) : (
+                <Trash />
+              )}
             </Button>
           </div>
         );
