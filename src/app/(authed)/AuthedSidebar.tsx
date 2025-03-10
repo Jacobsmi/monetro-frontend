@@ -7,7 +7,7 @@ import {
   SidebarHeader,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { DollarSign, Gauge } from "lucide-react";
+import { ChartPie, Gauge } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,7 +15,7 @@ export function AuthedSidebar() {
   const pathname = usePathname();
   const sidebarLinks = [
     { href: "/dashboard", label: "Dashboard", icon: <Gauge /> },
-    { href: "/transactions", label: "Transactions", icon: <DollarSign /> },
+    { href: "/budget", label: "Budget", icon: <ChartPie /> },
   ];
   return (
     <Sidebar>
