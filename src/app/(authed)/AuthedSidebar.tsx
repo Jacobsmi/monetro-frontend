@@ -17,6 +17,7 @@ export function AuthedSidebar() {
     { href: "/dashboard", label: "Dashboard", icon: <Gauge /> },
     { href: "/budget", label: "Budget", icon: <ChartPie /> },
   ];
+
   return (
     <Sidebar>
       <SidebarHeader className="p-4 text-xl font-bold">Monetro</SidebarHeader>
@@ -35,7 +36,7 @@ export function AuthedSidebar() {
           </SidebarMenuButton>
         ))}
       </SidebarContent>
-      <SidebarFooter />
+      <SidebarFooter></SidebarFooter>
     </Sidebar>
   );
 }

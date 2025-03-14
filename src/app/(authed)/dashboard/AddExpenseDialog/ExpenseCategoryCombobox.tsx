@@ -3,9 +3,11 @@
 import { Button } from "@/components/ui/button";
 import {
   Command,
+  CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -53,6 +55,14 @@ export default function ExpenseCategoryCombobox({
     }
     setIsCreatingCategory(false);
   };
+  console.log("CATEGORIES", categories);
+  const budgetedCategories = categories.filter(
+    (category) => category.budgeted === true
+  );
+  const nonBudgetedCategories = categories.filter(
+    (category) => category.budgeted === false
+  );
+  console.log("NON BUDGETED", nonBudgetedCategories);
 
   return (
     <Popover open={open} onOpenChange={(open) => setOpen(open)}>
@@ -80,18 +90,41 @@ export default function ExpenseCategoryCombobox({
         <Command>
           <CommandInput value={input} onValueChange={setInput} />
           <CommandList>
-            {categories.map((category) => (
-              <CommandItem
-                key={category.id}
-                onSelect={() => {
-                  onChange(category.id);
-                  setOpen(false);
-                }}
-                className="text-sm"
-              >
-                {category.name}
-              </CommandItem>
-            ))}
+            {budgetedCategories.length > 0 && (
+              <>
+                <CommandGroup heading="Budgeted">
+                  {budgetedCategories.map((category) => (
+                    <CommandItem
+                      key={category.id}
+                      onSelect={() => {
+                        onChange(category.id);
+                        setOpen(false);
+                      }}
+                      className="text-sm"
+                    >
+                      {category.name}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+                <CommandSeparator />
+              </>
+            )}
+            {nonBudgetedCategories.length > 0 && (
+              <CommandGroup heading="Non-Budgeted">
+                {nonBudgetedCategories.map((category) => (
+                  <CommandItem
+                    key={category.id}
+                    onSelect={() => {
+                      onChange(category.id);
+                      setOpen(false);
+                    }}
+                    className="text-sm"
+                  >
+                    {category.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
             {input &&
               !categories.some(
                 (category) =>

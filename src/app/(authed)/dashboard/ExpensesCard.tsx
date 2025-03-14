@@ -7,7 +7,7 @@ import ManageExpenseDialog from "./AddExpenseDialog/ManageExpenseDialog";
 export default async function ExpensesCard() {
   const supabase = await createClient();
   const categoriesResponse = await supabase
-    .from("expense_categories")
+    .from("categories")
     .select("*")
     .overrideTypes<Category[], { merge: false }>();
   const expensesResponse = await supabase
@@ -16,6 +16,7 @@ export default async function ExpensesCard() {
     .order("date", { ascending: false })
     .limit(10)
     .overrideTypes<Expense[], { merge: false }>();
+  console.log(categoriesResponse);
   return (
     <Card>
       <CardHeader className="flex flex-row justify-between items-center">

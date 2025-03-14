@@ -2,7 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AuthedSidebar } from "./AuthedSidebar";
 import AuthedDropdown from "./AuthedDropdown";
 
-export default function AuthedLayout({
+export default async function AuthedLayout({
   children,
 }: {
   children: React.ReactNode;
